@@ -11,13 +11,19 @@ constexpr int MinArenaW = 20;
 constexpr int MaxArenaW = 120;
 constexpr int MinArenaH = 10;
 constexpr int MaxArenaH = 60;
-constexpr int CellWidth = 2;
+constexpr int CellWidth = 3;
+constexpr int CellHeight = 2;
 constexpr int HudRows = 3;
 constexpr int MinTermCols = 60;
 constexpr int FrameBorder = 2;
+constexpr int MinFrameCols = CellWidth * MinArenaW + FrameBorder;
+constexpr int MinFrameRows = CellHeight * MinArenaH + FrameBorder;
 constexpr int MaxCells = MaxArenaW * MaxArenaH;
 
 }
+
+inline int cellCol(int x) { return cfg::CellWidth * x; }
+inline int cellRow(int y) { return cfg::CellHeight * y; }
 
 struct Vec2 {
     int x = 0;
@@ -85,8 +91,8 @@ public:
 
         arena.width = detail::clampInt((winW - cfg::FrameBorder) / cfg::CellWidth,
                                        cfg::MinArenaW, cfg::MaxArenaW);
-        arena.height = detail::clampInt(winH - cfg::FrameBorder,
-                                        cfg::MinArenaH, cfg::MaxArenaH);
+        arena.height = detail::clampInt((winH - cfg::FrameBorder) / cfg::CellHeight,
+                                cfg::MinArenaH, cfg::MaxArenaH);
         cellsW_ = arena.width;
         cellsH_ = arena.height;
         sized_ = true;
@@ -111,19 +117,19 @@ public:
     }
 
     int needCols() const {
-        if (!sized_) return cfg::MinTermCols;
+        if (!sized_) return cfg::MinFrameCols > cfg::MinTermCols ? cfg::MinFrameCols : cfg::MinTermCols;
         const int fw = frameW();
         return fw > cfg::MinTermCols ? fw : cfg::MinTermCols;
     }
     int needRows() const {
-        if (!sized_) return cfg::HudRows + cfg::MinArenaH + cfg::FrameBorder;
+        if (!sized_) return cfg::HudRows + cfg::MinFrameRows;
         return cfg::HudRows + frameH();
     }
 
     int cellsW() const { return sized_ ? cellsW_ : 0; }
     int cellsH() const { return sized_ ? cellsH_ : 0; }
     int frameW() const { return sized_ ? cfg::CellWidth * cellsW_ + cfg::FrameBorder : 0; }
-    int frameH() const { return sized_ ? cellsH_ + cfg::FrameBorder : 0; }
+    int frameH() const { return sized_ ? cfg::CellHeight * cellsH_ + cfg::FrameBorder : 0; }
 
     WINDOW* hud() const { return hud_; }
     WINDOW* frame() const { return frame_; }
@@ -139,7 +145,7 @@ private:
         hud_ = newwin(cfg::HudRows, hudW, 0, (COLS - hudW) / 2);
         frame_ = newwin(fh, fw, cfg::HudRows, (COLS - fw) / 2);
         if (frame_ != nullptr) {
-            field_ = derwin(frame_, cellsH_, cfg::CellWidth * cellsW_, 1, 1);
+            field_ = derwin(frame_, cfg::CellHeight * cellsH_, cfg::CellWidth * cellsW_, 1, 1);
         }
         if (hud_ == nullptr || frame_ == nullptr || field_ == nullptr) {
             release();

@@ -52,6 +52,12 @@ inline const char* causeText(DeathCause cause) {
 
 inline int reasonWidth(DeathCause cause) { return 4 + textLen(causeText(cause)); }
 
+inline int digits(int n) {
+    int d = 1;
+    while (n >= 10) { n /= 10; ++d; }
+    return d;
+}
+
 inline void putCentered(WINDOW* w, int row, const char* text) {
     int col = (getmaxx(w) - textLen(text)) / 2;
     if (col < 0) col = 0;
@@ -87,14 +93,19 @@ inline void drawPlayerStatus(WINDOW* hud, int col, int index, const Snake& s, in
 }
 
 inline void drawStatus(WINDOW* hud, const Snake* snakes, const int* attrs) {
-    const int half = getmaxx(hud) / 2;
-    for (int i = 0; i < PlayerCount; ++i) {
-        detail::drawPlayerStatus(hud, i == 0 ? 0 : half, i, snakes[i], attrs[i]);
-    }
+    detail::drawPlayerStatus(hud, 0, 0, snakes[0], attrs[0]);
+
+    const Snake& s = snakes[1];
+    const int len = s.length();
+    const int pend = s.pending();
+    const int width = 20 + detail::digits(len) + detail::digits(len + pend) + detail::digits(pend);
+    int col = getmaxx(hud) - width;
+    if (col < 0) col = 0;
+    detail::drawPlayerStatus(hud, col, 1, s, attrs[1]);
 }
 
 inline void drawCommands(WINDOW* hud) {
-    mvwaddstr(hud, 1, 0, TextCommands);
+    detail::putCentered(hud, 1, TextCommands);
 }
 
 inline void drawResult(WINDOW* frame, const Snake* snakes, Outcome outcome) {

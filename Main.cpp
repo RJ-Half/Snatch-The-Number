@@ -175,8 +175,9 @@ private:
     }
 
     void tryStart() {
-        if (COLS >= cfg::MinTermCols && LINES >= cfg::HudRows + cfg::MinArenaH + cfg::FrameBorder)
-            startMatch();
+       if (COLS >= cfg::MinTermCols && COLS >= cfg::MinFrameCols &&
+    LINES >= cfg::HudRows + cfg::MinFrameRows)
+    startMatch();
     }
 
     void onResize() {

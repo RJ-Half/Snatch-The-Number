@@ -218,11 +218,11 @@ private:
             wattron(w, at);
             if (i == 0 && snake.isDead())
             {
-                mvwprintw(w, p.y, cfg::CellWidth * p.x, "XX");
+                mvwprintw(w, cellRow(p.y), cellCol(p.x), "XX");
             }
             else
             {
-                mvwprintw(w, p.y, cfg::CellWidth * p.x, "%2d", snake.valueAt(i));
+                mvwprintw(w, cellRow(p.y), cellCol(p.x), "%2d", snake.valueAt(i));
             }
             wattroff(w, at);
         }
@@ -286,7 +286,7 @@ public:
             const Food &f = food.get(i);
             const attr_t at = colors_.attr(detail::foodTone(f.value)) | A_BOLD;
             wattron(win_.field(), at);
-            mvwprintw(win_.field(), f.pos.y, cfg::CellWidth * f.pos.x, "*%d", f.value);
+            mvwprintw(win_.field(), cellRow(f.pos.y), cellCol(f.pos.x), "*%d", f.value);
             wattroff(win_.field(), at);
         }
         for (int i = 0; i < PlayerCount; ++i)
