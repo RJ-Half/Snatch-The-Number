@@ -212,8 +212,9 @@ private:
             attr_t at = base;
             if (i == 0)
             {
-                at |= A_REVERSE;
+                at |= A_BOLD;
             }
+            at |= A_REVERSE;
             wattron(w, at);
             if (i == 0 && snake.isDead())
             {
