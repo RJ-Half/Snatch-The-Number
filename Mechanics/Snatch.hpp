@@ -18,7 +18,7 @@ struct Steal {
 
 inline int targetIndex(const Snake& foe, Vec2 cell, bool foeGrows) {
     int index = foe.indexOf(cell);
-    return collision::isSolid(foe, index, foeGrows) ? index : -1;
+    return collision::isSolid(cell, foe, foeGrows) ? index : -1;
 }
 
 
