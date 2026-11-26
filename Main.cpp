@@ -1,47 +1,26 @@
-// Snatch The Number : permainan Snake dua pemain di terminal.
-// Build: make   |   g++ -std=c++17 -Wall -Wextra -O2 -I. Main.cpp -o number_snake -lncurses
-//
-// Main.cpp ini disesuaikan dengan header tim (Object/, Mechanics/, Platform/).
-// Catatan antarmuka yang dipakai:
-//  - Renderer sudah memiliki Terminal dan ArenaWindow, jadi App tidak membuatnya lagi.
-//  - Outcome::None = permainan berjalan; DeathCause: SelfBite, HeadToHead, Wiped.
-//  - snatch::Steal tidak punya flag aktif: aktif bila index >= 0 (lihat active()).
-
 #include "Platform/Arena.hpp"
 #include "Object/Snake.hpp"
 #include "Object/Food.hpp"
 #include "Mechanics/Collision.hpp"
 #include "Mechanics/Growth.hpp"
-
-// PENYESUAIAN untuk Snatch.hpp: snatch::targetIndex() memanggil
-//   collision::isSolid(foe, index, foeGrows)   // urutan: (Snake, int, bool)
-// padahal Collision.hpp hanya punya isSolid(Vec2 cell, const Snake&, bool). Tanpa
-// overload ini Snatch.hpp tidak bisa dikompilasi. Overload ini harus dideklarasikan
-// SEBELUM Snatch.hpp di-include. Aturannya sama dengan isSolid versi Vec2: segmen
-// di `index` dianggap padat, kecuali ekor yang benar-benar pergi (tidak tumbuh).
-// Bila Snatch.hpp baris 21 sudah diperbaiki menjadi isSolid(cell, foe, foeGrows),
-// blok ini boleh dihapus.
- // namespace collision
-
 #include "Mechanics/Snatch.hpp"
 #include "Mechanics/Controls.hpp"
 #include "Platform/Menu.hpp"
 #include "Mechanics/Render.hpp"
 
-using namespace std;  // tidak berpengaruh; hapus bila kompilator mengeluh
+using namespace std; 
 
 struct MovePlan {
     Vec2 next;
     bool grow = false;
     DeathCause death = DeathCause::None;
-    snatch::Steal steal;  // index -1 = tidak mencuri
+    snatch::Steal steal;  
 };
 
 struct TickPlan {
     MovePlan move[PlayerCount];
 };
 
-// State pertandingan dan urutan aturan tiap tick (dua fase: plan lalu apply).
 class Match {
 public:
     using SnakeArray = Snake[PlayerCount];
@@ -73,12 +52,11 @@ public:
     const Arena& arena() const { return arena_; }
 
 private:
-    // Arah antre menjadi arah aktif.
+   
     void resolve() {
         for (int p = 0; p < PlayerCount; ++p) snakes_[p].commitTurn();
     }
 
-    // Hanya membaca state: semua keputusan dari kondisi awal tick.
     TickPlan plan() const {
         TickPlan tp;
         Vec2 head[PlayerCount];
@@ -102,7 +80,6 @@ private:
             }
         }
 
-        // Mengenai kepala lawan = seluruh tubuh lawan dicuri.
         for (int p = 0; p < PlayerCount; ++p) {
             const MovePlan& mv = tp.move[p];
             const int o = otherPlayer(p);
@@ -111,7 +88,6 @@ private:
                 tp.move[o].death = DeathCause::Wiped;
         }
 
-        // Serangan pemain yang kalah dibatalkan.
         for (int p = 0; p < PlayerCount; ++p)
             if (tp.move[p].death != DeathCause::None) tp.move[p].steal = snatch::Steal{};
         return tp;
@@ -134,7 +110,6 @@ private:
         else mv.death = DeathCause::FailedAttack;
     }
 
-    // Satu-satunya yang mengubah state.
     void apply(const TickPlan& tp) {
         for (int p = 0; p < PlayerCount; ++p)
             if (tp.move[p].death != DeathCause::None) snakes_[p].setCause(tp.move[p].death);
@@ -156,7 +131,6 @@ private:
     Random rng_;
 };
 
-// Loop utama dan status program.
 class App {
 public:
     App() : match_(processSeed()) { syncSize(); }
@@ -209,7 +183,7 @@ private:
         syncSize();
         fullClear_ = true;
         dirty_ = true;
-        if (started_) renderer_.rebuild();  // rebuild() sendiri menolak bila terminal masih kecil
+        if (started_) renderer_.rebuild();  
     }
 
     void handle(const InputEvent& ev) {
@@ -246,7 +220,7 @@ private:
         dirty_ = false;
     }
 
-    Renderer renderer_;  // harus pertama: memiliki Terminal (initscr lebih dulu, endwin terakhir)
+    Renderer renderer_;  
     Match match_;
     InputQueue queue_;
     TickTimer timer_;
