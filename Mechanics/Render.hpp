@@ -10,7 +10,7 @@
 #include "Platform/Menu.hpp"
 namespace cfg
 {
-    constexpr int TickMs = 100;
+    constexpr int TickMs = 150;
     constexpr int SliceMs = 5;
 }
 
